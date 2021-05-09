@@ -6,7 +6,7 @@ const db = config.get('mongoURI');
 const connectDb = async () =>{
     try
     {
-        await mangoose.connect(db);
+        await mangoose.connect(db, {useNewUrlParser: true});
         console.log('Mango db connected');
  
     }
