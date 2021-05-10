@@ -7,7 +7,7 @@ const connectDb = async () =>{
     try
     {
         await mangoose.connect(db, {useNewUrlParser: true});
-        console.log('Mango db connected');
+        console.log('Mongo db connected');
  
     }
     catch(err)
