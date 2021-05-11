@@ -1,3 +1,4 @@
 {
-   "mongoURI": "mongodb+srv://awais519:awais519@devconnector.b9mgf.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+   "mongoURI": "mongodb+srv://awais519:awais519@devconnector.b9mgf.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+   "jwtSecret": "mysecrettoken"
 }
