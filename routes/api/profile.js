@@ -122,4 +122,30 @@ router.get("/", async (req, res) => {
 	}
 });
 
+//@ROUTE: GET API/PROFILE/user/:userId
+//@DESC:  GET PROFILE BY USER ID
+//@ACCESS PUBLIC
+
+router.get("/user/:userId", async (req, res) => {
+	try {
+		const profile = await Profile.findOne({ user: req.params.userId }).populate(
+			"user",
+			["name", "avatar"]
+		);
+		if (!profile) {
+			return res
+				.status(401)
+				.send("There is no profile available for this user.");
+		}
+		return res.json(profile);
+	} catch (e) {
+		if (e.kind == "ObjectId") {
+			return res
+				.status(401)
+				.send("There is no profile available for this user.");
+		}
+		res.status(500).send("SERVER ERROR");
+	}
+});
+
 module.exports = router;
