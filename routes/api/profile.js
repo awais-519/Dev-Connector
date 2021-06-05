@@ -6,7 +6,7 @@ const auth = require("../../middleware/auth");
 const { check, validationResult } = require("express-validator");
 
 //@ROUTE GET API/PROFILE/ME
-//DESC GET CURRENT USER PROFILE
+//DESC: GET USER LOGGED IN USER PROFILE
 //@ACCESS PRIVATE
 
 router.get("/me", auth, async (req, res) => {
@@ -166,6 +166,65 @@ router.delete("/", auth, async (req, res) => {
 	} catch (e) {
 		console.log(e);
 		res.status(500).send("SERVER ERROR");
+	}
+});
+
+//@ROUTE: PUT API/PROFILE/EXPERIENCE
+//@DESC:  DELETE USER PROFILE POSTS AND HIMSELF
+//@ACCESS PRIVATE
+router.put(
+	"/experience",
+	[
+		auth,
+		[
+			check("title", "TITLE IS REQUIRED!").not().isEmpty(),
+			check("company", "COMPANY IS RQUIRED!").not().isEmpty(),
+			check("from", "FROM-DATE is required!").not().isEmpty(),
+		],
+	],
+	async (req, res) => {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ errors: errors.array() });
+		}
+
+		const { title, company, location, from, to, current, description } =
+			req.body;
+
+		const newExp = { title, company, location, from, to, current, description };
+
+		try {
+			const profile = await Profile.findOne({ user: req.user.id });
+
+			//UNSHIFT will put the new Experience first before everyone
+			profile.experience.unshift(newExp);
+			await profile.save();
+
+			res.json(profile);
+		} catch (err) {
+			res.status(400).send("Server Error");
+		}
+	}
+);
+
+//@ROUTE: DELETE API/PROFILE/EXPERIENCE/:EXP_ID
+//@DESC:  DELETE USER EXPERIENCE FORM PROFILE
+//@ACCESS PRIVATE
+router.delete("/experience/:exp_id", auth, async (req, res) => {
+	try {
+		const profile = await Profile.findOne({ user: req.user.id });
+
+		const index = profile.experience
+			.map((item) => item.id)
+			.indexOf(req.params.exp_id);
+		profile.experience.splice(index, 1);
+
+		await profile.save();
+
+		res.json(profile);
+	} catch (err) {
+		console.log(err);
+		res.status(400).send("SERVER ERROR");
 	}
 });
 
