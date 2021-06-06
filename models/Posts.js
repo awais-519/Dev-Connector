@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const postSchema = new Schema({
+	//LIKE FACEBOOK UERS POST MODEL
 	user: {
 		type: Schema.Types.ObjectId,
 		ref: "users",
