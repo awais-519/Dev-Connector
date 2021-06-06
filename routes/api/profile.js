@@ -328,7 +328,7 @@ router.get("/github/:un", (req, res) => {
 		});
 	} catch (err) {
 		console.log(err);
-		req.status(400).send("SERVER ERROR");
+		res.status(400).send("SERVER ERROR");
 	}
 });
 
