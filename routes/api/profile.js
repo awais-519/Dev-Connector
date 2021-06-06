@@ -170,7 +170,7 @@ router.delete("/", auth, async (req, res) => {
 });
 
 //@ROUTE: PUT API/PROFILE/EXPERIENCE
-//@DESC:  DELETE USER PROFILE POSTS AND HIMSELF
+//@DESC:  ADDING EXPERIENCE IN THE PROFILE
 //@ACCESS PRIVATE
 router.put(
 	"/experience",
@@ -218,6 +218,74 @@ router.delete("/experience/:exp_id", auth, async (req, res) => {
 			.map((item) => item.id)
 			.indexOf(req.params.exp_id);
 		profile.experience.splice(index, 1);
+
+		await profile.save();
+
+		res.json(profile);
+	} catch (err) {
+		console.log(err);
+		res.status(400).send("SERVER ERROR");
+	}
+});
+
+//@ROUTE: PUT API/PROFILE/EXPERIENCE
+//@DESC:  ADD THE EDUCATION IN THE PROFILE
+//@ACCESS PRIVATE
+router.put(
+	"/education",
+	[
+		auth,
+		[
+			check("school", "school IS REQUIRED!").not().isEmpty(),
+			check("degree", "degree IS RQUIRED!").not().isEmpty(),
+			check("fieldofstudy", "field  IS REQUIRED!").not().isEmpty(),
+			check("from", "FROM-DATE is required!").not().isEmpty(),
+		],
+	],
+	async (req, res) => {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ errors: errors.array() });
+		}
+
+		const { school, degree, fieldofstudy, from, to, current, description } =
+			req.body;
+
+		const newEdu = {
+			school,
+			degree,
+			fieldofstudy,
+			from,
+			to,
+			current,
+			description,
+		};
+
+		try {
+			const profile = await Profile.findOne({ user: req.user.id });
+
+			//UNSHIFT will put the new education first before everyone
+			profile.education.unshift(newEdu);
+			await profile.save();
+
+			res.json(profile);
+		} catch (err) {
+			res.status(400).send("Server Error");
+		}
+	}
+);
+
+//@ROUTE: DELETE API/PROFILE/EXPERIENCE/:EDU_ID
+//@DESC:  DELETE USER EDUCATION FORM PROFILE
+//@ACCESS PRIVATE
+router.delete("/education/:edu_id", auth, async (req, res) => {
+	try {
+		const profile = await Profile.findOne({ user: req.user.id });
+
+		const index = profile.education
+			.map((item) => item.id)
+			.indexOf(req.params.edu_id);
+		profile.education.splice(index, 1);
 
 		await profile.save();
 
