@@ -1,14 +1,16 @@
 const express = require("express");
 const router = express.Router();
+const config = require("config");
+const request = require("request");
 const Profile = require("../../models/Profile");
 const User = require("../../models/Users");
 const auth = require("../../middleware/auth");
 const { check, validationResult } = require("express-validator");
+const { response } = require("express");
 
 //@ROUTE GET API/PROFILE/ME
 //DESC: GET USER LOGGED IN USER PROFILE
 //@ACCESS PRIVATE
-
 router.get("/me", auth, async (req, res) => {
 	try {
 		const profile = await Profile.findOne({ user: req.user.id }).populate(
@@ -45,6 +47,7 @@ router.post(
 			return res.status(400).json({ errors: errors.array() });
 		}
 
+		//DESTRUCTING IN JS
 		const {
 			company,
 			website,
@@ -293,6 +296,39 @@ router.delete("/education/:edu_id", auth, async (req, res) => {
 	} catch (err) {
 		console.log(err);
 		res.status(400).send("SERVER ERROR");
+	}
+});
+
+//@ROUTE: GET API/PROFILE/GITHUB/:USERNAME
+//@DESC:  GET USER REPOS FROM GITHUB
+//@ACCESS PUBLIC
+router.get("/github/:un", (req, res) => {
+	try {
+		//HERE THE `REQUEST` PACKAGE WILL BE USED TO DO THE REQUEST TO THE GITHUB API
+		const options = {
+			uri: `https://api.github.com/users/${
+				req.params.un
+			}/repos?per_page=5&sort=created:asc&
+			client_id=${config.get("githubClientId")}&
+			client_secret=${config.get("githubSecret")}`,
+			method: "GET",
+			headers: { "user-agent": "node-js" },
+		};
+
+		request(options, (error, response, body) => {
+			if (error) {
+				console.error(error);
+			}
+
+			if (response.statusCode !== 200) {
+				return response.status(404).json({ msg: "NO REPOSITORY FOUND." });
+			}
+
+			return res.json(JSON.parse(body));
+		});
+	} catch (err) {
+		console.log(err);
+		req.status(400).send("SERVER ERROR");
 	}
 });
 
