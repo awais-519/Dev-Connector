@@ -103,7 +103,7 @@ router.delete("/:id", auth, async (req, res) => {
 	}
 });
 
-//@DELETE    API/POSTS/Like/:ID
+//@PUT       API/POSTS/Like/:ID
 //@DESC:     LIKE A POST
 //@ACCESS:   PRIVATE
 
@@ -113,13 +113,45 @@ router.put("/Like/:id", auth, async (req, res) => {
 
 		//check if the post has alredy been liked
 		if (
-			post.likes.filter((like) => like.user.toString === req.user.id).length > 0
+			post.likes.filter((like) => like.user.toString() === req.user.id).length >
+			0
 		) {
 			return res.status(400).json({ msg: "POST ALREADY LIKED" });
 		}
 
 		//UNSIHIFT WILL PUT THAT LIKE TO THE BEGINNING
 		post.likes.unshift({ user: req.user.id });
+		await post.save();
+
+		return res.json(post.likes);
+	} catch (err) {
+		console.log(err);
+		res.status(500).send("Server Error");
+	}
+});
+
+//@PUT    API/POSTS/unlike/:ID
+//@DESC:     UNLIKE A POST
+//@ACCESS:   PRIVATE
+
+router.put("/unlike/:id", auth, async (req, res) => {
+	try {
+		const post = await Post.findById(req.params.id);
+
+		//check if the post have a like
+		if (
+			post.likes.filter((like) => like.user.toString() === req.user.id)
+				.length === 0
+		) {
+			return res.status(400).json({ msg: "POST NOT LIKED YET." });
+		}
+
+		const removeIndex = post.likes
+			.map((like) => like.user.toString())
+			.indexOf(req.user.id);
+
+		post.likes.splice(removeIndex, 1);
+
 		await post.save();
 
 		return res.json(post.likes);
